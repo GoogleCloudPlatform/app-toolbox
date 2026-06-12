@@ -56,6 +56,10 @@ if child_pid == 0:
         print(f"Failed to setns Mount: {e}")
         sys.exit(1)
     
+    # Close namespace file descriptors as they are no longer needed
+    os.close(mnt_ns)
+    os.close(pid_ns)
+    
     # 5. Execute the binary directly via /proc/self/fd/<fd>
     try:
         os.execve(f"/proc/self/fd/{binary_fd}", [binary_path] + binary_args, os.environ)
@@ -64,5 +68,9 @@ if child_pid == 0:
         sys.exit(1)
 else:
     # Parent waits for child
+    # Close file descriptors in parent since they are not needed here
+    os.close(binary_fd)
+    os.close(mnt_ns)
+    os.close(pid_ns)
     _, status = os.waitpid(child_pid, 0)
     sys.exit(os.waitstatus_to_exitcode(status))

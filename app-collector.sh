@@ -53,7 +53,7 @@ echo ""
 echo "[1/5] Searching for containers in Pod '$POD_NAME'..."
 
 # List files, filter by pod name, and extract container names
-options=($(ls "$LOG_DIR" | grep "^${POD_NAME}_" | awk -F'_' '{print $3}' | sed 's/\.log$//' | sed 's/-[^-]*$//' | sort -u))
+mapfile -t options < <(ls "$LOG_DIR" | grep "^${POD_NAME}_" | awk -F'_' '{print $3}' | sed 's/\.log$//' | sed 's/-[^-]*$//' | sort -u)
 
 if [ ${#options[@]} -eq 0 ]; then
     echo "Error: No logs found for Pod '$POD_NAME' in $LOG_DIR."
@@ -114,10 +114,10 @@ echo "Selected Language: $lang"
 # Step 5.5: Ask for Duration (No colors, explicit message)
 echo ""
 echo "[5/5] Enter Profiling Duration"
-read -r -p "Enter duration in seconds [Press Enter for default 60s, Max 120s]: " DURATION
+read -r -p "Enter duration in seconds [Press Enter for default 30s, Max 120s]: " DURATION
 
-# If the user just presses Enter, default to 60 seconds
-DURATION=${DURATION:-60}
+# If the user just presses Enter, default to 30 seconds
+DURATION=${DURATION:-30}
 
 # Safety Guardrail: Hard cap at 120 seconds
 if [ "$DURATION" -gt 120 ]; then
@@ -136,8 +136,6 @@ FILE_PREFIX="${WORK_DIR}/profile"
 
 echo ""
 echo "Starting Data Collection (Production Optimized)..."
-# Production safety: Cap duration for potentially heavy tools (Node eBPF, Go perf) to max 30s
-SAFE_DURATION=$(( DURATION > 30 ? 30 : DURATION ))
 
 case $LANG in
     "java")
@@ -171,6 +169,9 @@ case $LANG in
         fi
         ;;
     "python")
+        if [ "$DURATION" -gt 30 ]; then
+            echo "Warning: Profiling for >30s can introduce minor CPU overhead on loaded nodes."
+        fi
         echo "Running py-spy..."
         nice -n 19 py-spy record -d "$DURATION" --idle --nonblocking -o "${FILE_PREFIX}.svg" --pid "$PID" || true
         ;;
@@ -178,6 +179,9 @@ case $LANG in
         echo "Node.js: Will capture off-cpu profile via bpftrace in the next step..."
         ;;
     "go")
+        if [ "$DURATION" -gt 30 ]; then
+            echo "Warning: Profiling for >30s can introduce minor CPU overhead on loaded nodes."
+        fi
         echo "Golang: Running bpftrace on-CPU profiler (sampling user stacks at 99Hz for ${DURATION}s)..."
         if command -v bpftrace &> /dev/null; then
             nice -n 19 timeout "$DURATION" bpftrace -e '
@@ -200,22 +204,6 @@ CONTAINER_NETNS=""
 if [ -f "/proc/$PID/ns/net" ]; then
     CONTAINER_NETNS=$(readlink "/proc/$PID/ns/net" | sed -E 's/net:\[([0-9]+)\]/\1/')
 fi
-
-find_bpftrace_tool() {
-    local tool_name="$1"
-    local paths=(
-        "/usr/share/bpftrace/tools"
-        "/usr/sbin"
-        "/usr/local/share/bpftrace/tools"
-    )
-    for p in "${paths[@]}"; do
-        if [ -f "${p}/${tool_name}" ]; then
-            echo "${p}/${tool_name}"
-            return 0
-        fi
-    done
-    return 1
-}
 
 if command -v bpftrace &> /dev/null; then
     # 1. Disk Latency (Separated by resolved device names)
