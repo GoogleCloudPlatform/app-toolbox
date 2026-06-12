@@ -1,0 +1,22 @@
+# Staging and build artifacts
+temp.md
+design_doc.md
+oss_proposal.md
+*.tar.xz
+*.jfr
+*.txt
+*.svg
+profile_*
+
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# OS-specific files
+.DS_Store
+.directory
+Thumbs.db
