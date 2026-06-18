@@ -17,7 +17,6 @@ FROM marketplace.gcr.io/google/ubuntu2404
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install prerequisites and tools
-# bpfcc-tools contains biolatency, offcputime, tcpretrans, execsnoop, oomkill
 RUN apt-get update && apt-get install -y -qq --no-install-recommends \
     python3-pip \
     xz-utils \
@@ -36,6 +35,9 @@ RUN chmod +x /usr/local/bin/container-exec
 # Copy the interactive collector script and make it executable
 COPY app-collector.sh /usr/local/bin/app-collector
 RUN chmod +x /usr/local/bin/app-collector
+
+# Copy Third-Party Notices and Licenses
+COPY third_party/THIRD_PARTY_NOTICES.txt /THIRD_PARTY_NOTICES.txt
 
 # Set the working directory
 WORKDIR /usr/local/bin

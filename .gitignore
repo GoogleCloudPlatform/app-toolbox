@@ -19,6 +19,8 @@ oss_proposal.md
 *.tar.xz
 *.jfr
 *.txt
+# Do not ignore third-party license notices
+!third_party/THIRD_PARTY_NOTICES.txt
 *.svg
 profile_*
 
