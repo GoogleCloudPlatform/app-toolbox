@@ -13,11 +13,40 @@
 # limitations under the License.
 
 steps:
+# Step 1: Build Docker image with multi-tier immutable tags
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/app-toolbox:${_TAG}', '-f', 'Dockerfile', '.']
-images:
-- '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/app-toolbox:${_TAG}'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+    if [ -z "$$SHORT_SHA" ] || [ "$$SHORT_SHA" = "unknown" ]; then
+      SHORT_SHA="local"
+    fi
+    DATE_TAG="$(date +%Y%m%d)-g$$SHORT_SHA"
+
+    echo "=================================================="
+    echo "Building app-toolbox container tags:"
+    echo " 1. latest (floating)"
+    echo " 2. $$DATE_TAG (immutable audit)"
+    echo " 3. ${_SEMVER_TAG} (semantic release)"
+    echo "=================================================="
+
+    docker build \
+      -t ${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/app-toolbox:latest \
+      -t ${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/app-toolbox:$$DATE_TAG \
+      -t ${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/app-toolbox:${_SEMVER_TAG} \
+      -f Dockerfile .
+
+# Step 2: Push all built tags to Artifact Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '--all-tags', '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/app-toolbox']
+
 substitutions:
-  _LOCATION: 'asia-south1'
-  _REPOSITORY: 'testdocker'
-  _TAG: '0.2'
+  _LOCATION: 'us'
+  _REPOSITORY: 'release'
+  _SEMVER_TAG: 'v1.0.0'
+  COMMIT_SHA: 'unknown'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
