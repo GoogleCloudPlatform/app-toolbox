@@ -29,56 +29,50 @@ This is a customized version of the COS Toolbox image, modified to include a sui
 
 ---
 
-## Prerequisites (Node Configuration)
+## How to Run & Use (GKE / COS Nodes)
 
-To run eBPF tools successfully inside this container on a Container-Optimized OS (COS) node, you **must** override the default `toolbox` binds and permissions. 
+To run eBPF diagnostics successfully inside this container on a Container-Optimized OS (COS) node, you must configure the custom image coordinates and unlock kernel system call filters.
 
-Add the following lines to your `${HOME}/.toolboxrc` file on the COS host:
+1.  **SSH into your GKE node.**
+2.  **Configure `~/.toolboxrc` on the COS host:**
+    Add the following lines to your `${HOME}/.toolboxrc` file:
 
-```
-
-TOOLBOX_DOCKER_IMAGE="<your-artifact-registry-path>/app-toolbox"
-TOOLBOX_DOCKER_TAG="0.2"
-TOOLBOX_BIND="--bind=/:/media/root --bind=/usr:/media/root/usr --bind=/run:/media/root/run --bind=/sys:/sys --bind=/proc:/proc"
-TOOLBOX_ENV="--system-call-filter=bpf --system-call-filter=perf_event_open"
-```
-
-*Note: The `TOOLBOX_BIND` adds `/sys` and `/proc` mounts, and `TOOLBOX_ENV` unlocks the necessary system calls for eBPF.*
-
----
-
-## How to Build
-
-To build the image using Google Cloud Build:
-
-```
-
-gcloud builds submit --config cloudbuild.yaml .
-```
-
-This will push the image to your configured Artifact Registry location.
-
----
-
-## How to Use
-
-1.  SSH into your GKE node.
-2.  Ensure your `~/.toolboxrc` is configured as shown in the Prerequisites.
-3.  Launch the toolbox:
-
+    ```bash
+    TOOLBOX_DOCKER_IMAGE="us-docker.pkg.dev/app-toolbox-dist/release/app-toolbox"
+    TOOLBOX_DOCKER_TAG="latest"
+    TOOLBOX_BIND="--bind=/:/media/root --bind=/usr:/media/root/usr --bind=/run:/media/root/run --bind=/sys:/sys --bind=/proc:/proc"
+    TOOLBOX_ENV="--system-call-filter=bpf --system-call-filter=perf_event_open"
     ```
+
+    *Note: The `TOOLBOX_BIND` adds `/sys` and `/proc` mounts, and `TOOLBOX_ENV` unlocks the necessary system calls for eBPF.*
+
+3.  **Launch the toolbox:**
+
+    ```bash
     toolbox
     ```
 
-4.  Run the interactive collector script:
+4.  **Run the interactive collector script:**
 
-    ```
+    ```bash
     app-collector
     ```
 
-5.  Follow the prompts to select the Pod, Container, Language, and Duration.
+5.  **Follow the interactive prompts** to select the target Pod, Container, Language, and Duration.
 
-At the end of the run, the script will output the path to the generated `.tar.xz` report file in `/var`.
+At the end of the run, the script will output the exact path to the generated `.tar.xz` report file in `/var`.
+
+---
+
+## How to Build Custom Images
+
+To build and test your own container image modifications using Google Cloud Build:
+
+```bash
+gcloud builds submit --config cloudbuild.yaml .
+```
+
+This will automatically compile and push the multi-tag image to your configured Artifact Registry location.
 
 ### Transferring Files Into and Out of the Toolbox
 

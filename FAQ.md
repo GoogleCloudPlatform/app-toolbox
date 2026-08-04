@@ -122,8 +122,8 @@ gcloud builds submit --config cloudbuild.yaml .
 Tracepoints and eBPF diagnostics require kernel mounts. Place this in `~/.toolboxrc` on the COS node host filesystem:
 
 ```bash
-TOOLBOX_DOCKER_IMAGE="<your-artifact-registry-path>/app-toolbox"
-TOOLBOX_DOCKER_TAG="0.2"
+TOOLBOX_DOCKER_IMAGE="us-docker.pkg.dev/app-toolbox-dist/release/app-toolbox"
+TOOLBOX_DOCKER_TAG="latest"
 TOOLBOX_BIND="--bind=/:/media/root --bind=/usr:/media/root/usr --bind=/run:/media/root/run --bind=/sys:/sys --bind=/proc:/proc"
 TOOLBOX_ENV="--system-call-filter=bpf --system-call-filter=perf_event_open"
 ```
