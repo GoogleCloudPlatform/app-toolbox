@@ -19,11 +19,11 @@ steps:
   args:
   - '-c'
   - |
-    SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+    SHORT_SHA=$$(echo "${_COMMIT_SHA}" | cut -c1-7)
     if [ -z "$$SHORT_SHA" ] || [ "$$SHORT_SHA" = "unknown" ]; then
-      SHORT_SHA="local"
+      SHORT_SHA=$$(git rev-parse --short=7 HEAD 2>/dev/null || echo "local")
     fi
-    DATE_TAG="$(date +%Y%m%d)-g$$SHORT_SHA"
+    DATE_TAG="$$(date +%Y%m%d)-g$$SHORT_SHA"
 
     echo "=================================================="
     echo "Building app-toolbox container tags:"
@@ -46,7 +46,7 @@ substitutions:
   _LOCATION: 'us'
   _REPOSITORY: 'release'
   _SEMVER_TAG: 'v1.0.0'
-  COMMIT_SHA: 'unknown'
+  _COMMIT_SHA: 'unknown'
 
 options:
   logging: CLOUD_LOGGING_ONLY
