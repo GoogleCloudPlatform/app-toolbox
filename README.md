@@ -103,6 +103,19 @@ This will automatically compile and push the multi-tag image to your configured 
    USER@cos-dev ~ $ more $HOME/ls.strace
    ```
 
+## 💬 Community & Support
+
+- **Questions?** Ask in [Discussions → Q&A](<QA_URL>).
+- **Ideas or feature requests?** Share them in [Discussions → Ideas](<IDEAS_URL>).
+- **Using App Toolbox?** 👋 [Tell us how](<WHO_URL>). It helps us prioritize!
+- **Found a bug?** Open an [Issue](https://github.com/GoogleCloudPlatform/app-toolbox/issues) with steps to reproduce.
+- **Google Cloud customer with a production issue?** Please contact Google Cloud Support.
+
+> ⚠️ Discussions and Issues are public. Please do not post customer data, logs,
+> profile dumps, or project identifiers.
+
+If App Toolbox helped you, please ⭐ **star the repo**. It helps others find it!
+
 ---
 
 ## Disclaimer

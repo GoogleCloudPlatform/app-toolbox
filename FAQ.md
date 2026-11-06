@@ -239,3 +239,12 @@ TOOLBOX_ENV="--system-call-filter=bpf --system-call-filter=perf_event_open"
 * **Interpretation:** 
   * The numbers show cumulative off-CPU duration in milliseconds. 
   * This validates whether a thread is slow because it is blocked (high off-cpu time) or because it is executing heavy logic on the CPU core (low off-cpu time, high JFR execution samples).
+
+ ### Where can I ask questions or share feedback?
+
+Use [GitHub Discussions](https://github.com/GoogleCloudPlatform/app-toolbox/discussions):
+**Q&A** for how-to questions, **Ideas** for feature requests, and
+[**Who's using App Toolbox**](<WHO_URL>) to share your use case. Report bugs in
+[Issues](https://github.com/GoogleCloudPlatform/app-toolbox/issues).
+Discussions are community-supported on a best-effort basis and are not an official
+Google Cloud support channel.
